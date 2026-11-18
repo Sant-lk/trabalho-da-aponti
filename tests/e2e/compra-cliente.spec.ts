@@ -1,21 +1,16 @@
 
-import { test, expect } from '@playwright/test';
-import { LoginPage} from '../../pages/login-cliente';
+import { test, expect } from '../../fixtures/authFixtures';
+import { LoginPage } from '../../pages/login-cliente';
 import { LojaPage } from '../../pages/lojaPage';
 import { CheckoutPage } from '../../pages/checkout-Page';
 
-test('Deve permitir que o cliente realize uma compra na loja', async ({ page }) => {
+test('Deve permitir que o cliente realize uma compra na loja', async ({ page, loginCliente }) => {
 
     const lojaPage = new LojaPage(page);
-    const loginPage= new LoginPage(page);
+    const loginPage = new LoginPage(page);
     const checkoutPage = new CheckoutPage(page);
 
-    // Dados do cliente
-    const email = 'user@system.com';
-    const senha = 'UserPassword123';
-
-    // Produto escolhido
-    const produto = 'Monitor Gamer Curvo UltraWide 29" IPS';
+    const produto = 'Mouse Óptico Atlas Pro 16000 DPI';
 
     // 1. Acessar a loja sem login
     await lojaPage.acessarLoja();
@@ -37,30 +32,27 @@ test('Deve permitir que o cliente realize uma compra na loja', async ({ page }) 
 
     await expect(page).toHaveURL(/login\.html\?return=checkout/);
 
-await loginPage.realizarLogin(email, senha);
+    // 7. Realizar login com a fixture
+    await loginPage.realizarLogin(loginCliente.email, loginCliente.senha);
 
-    
-
-    // 9. Validar acesso ao checkout
+    // 8. Validar checkout
     await checkoutPage.validarCheckout();
 
-    // 10. Confirmar que o produto chegou ao checkout
+    // 9. Confirmar produto no resumo
     await checkoutPage.validarProdutoNoResumo(produto);
 
-    // 11. Preencher dados de entrega
+    // 10. Preencher dados de entrega
     await checkoutPage.preencherCPF('52998224725');
     await checkoutPage.preencherCEP('01001000');
     await checkoutPage.preencherNumero('100');
     await checkoutPage.validarEnderecoPreenchido();
 
-    // 12. Selecionar PIX
+    // 11. Selecionar PIX
     await checkoutPage.selecionarPIX();
 
-    // 13. Finalizar compra
+    // 12. Finalizar compra
     await checkoutPage.finalizarCompra();
 
-    // 14. Validar acesso aos pedidos
+    // 13. Validar acesso aos pedidos
     await lojaPage.validarCompraRealizada();
-
-    
 });
